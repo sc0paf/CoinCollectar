@@ -1,0 +1,57 @@
+:root {
+	--main-bg-color: #adadad;
+	--rusty-coin-color: #8b5a2b;
+
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	background-color: var(--main-bg-color);
+	color: var(--rusty-coin-color)
+}
+
+h1 {
+	text-align: center;
+	-webkit-text-stroke: 1px black;
+}
+
+#current-coins {
+	text-align: center;
+	font-size: 20px;
+	font-weight: bold;
+}
+
+#wasd {
+	width: 800px;
+	margin: auto;
+	padding-right: 25px;
+	text-align: right;
+	font-style: italic;
+}
+
+canvas {
+	display: block;
+	margin: auto;
+	border: 1px solid rgb(141, 141, 141);
+}
+
+footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 15px; /* Adjust to footer height */
+  background-color: #f1f1f1;
+	border-top: 1px solid black;
+  text-align: center;
+}
+
+#upgrades {
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	width: 60%;
+	margin: auto;
+	padding: 10px;
+	gap: 10px;
+}
