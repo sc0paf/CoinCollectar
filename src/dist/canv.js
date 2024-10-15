@@ -1,8 +1,8 @@
 import { player } from './player.js';
 import { coins } from './coins.js';
-import { draggables } from './automation.js';
 const mainCanvas = document.getElementById('main-canvas');
 export const mtx = mainCanvas.getContext('2d');
+export const mousePosition = { x: 0, y: 0 };
 export const frameBounds = {
     leftBound: 10,
     rightBound: 780,
@@ -36,7 +36,6 @@ export const foc = () => {
 export const drawAllCoins = () => {
     mtx.fillStyle = '#8b5a2b';
     coins.forEach((coin) => {
-        // mtx.fillRect(coin.x, coin.y, coin.size, coin.size);
         mtx.beginPath();
         mtx.arc(coin.x + coin.size / 2, coin.y + coin.size / 2, coin.size / 2, 0, Math.PI * 2);
         mtx.closePath();
@@ -71,39 +70,24 @@ export const drawBG = (grid, gridSize = 10) => {
         }
     }
 };
-export const mousePosition = { x: 0, y: 0 };
-export const initializeCanvas = () => {
-    mainCanvas.addEventListener('mousemove', (event) => {
-        const rect = mainCanvas.getBoundingClientRect();
-        mousePosition.x = event.clientX - rect.left;
-        mousePosition.y = event.clientY - rect.top;
-        if (player.automation) {
-            draggables.forEach(draggable => {
-                if (draggable.dragging) {
-                    draggable.move(mousePosition);
-                }
-            });
-        }
-    });
-    mainCanvas.addEventListener('mousedown', (event) => {
-        if (player.automation) {
-            draggables.forEach(draggable => {
-                if (draggable.isMouseIn(mousePosition)) {
-                    draggable.initMovement(mousePosition);
-                }
-            });
-        }
-    });
-    mainCanvas.addEventListener('mouseup', (event) => {
-        if (player.automation) {
-            draggables.forEach(draggable => {
-                if (draggable.dragging) {
-                    draggable.drop();
-                }
-            });
-            // ignore this for now
-        }
-    });
+export const initCanvas = (ee, canvas) => {
+    ee.on('mousemove', handleMouseMove);
+    ee.on('mousedown', handleMouseDown);
+    ee.on('mouseup', handleMouseUp);
+};
+const handleMouseUp = (mousePos) => {
+    //click in canvas
+    return;
+};
+const handleMouseMove = (mousePos) => {
+    // mousemove in canvas
+    const rect = mainCanvas.getBoundingClientRect();
+    mousePosition.x = mousePos.x - rect.left;
+    mousePosition.y = mousePos.y - rect.top;
+};
+const handleMouseDown = (mousePos) => {
+    //click in canvas
+    return;
 };
 export const drawPlayer = () => {
     player.pickupArea.x = player.x - (player.pickupArea.size - player.size) / 2;

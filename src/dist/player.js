@@ -1,5 +1,6 @@
 import { coins, loadCoinState, resetCoins } from './coins.js';
 import { frameBounds } from './canv.js';
+import { ee, InputTarget, currentInputTarget, setInputTarget } from './eventemitter.js';
 // let growTimer = 0
 // let growInterval = 8
 export const defaultPlayerState = {
@@ -17,7 +18,6 @@ export const defaultPlayerState = {
     pickupAreaColor: 'rgba(40, 120, 181, 0.5)',
     playTime: 0,
     coins: 0,
-    input: true,
     automation: false,
     speaking: false,
     gridSnap: 0,
@@ -58,34 +58,25 @@ export function resetGame() {
     resetCoins();
     player = JSON.parse(JSON.stringify(defaultPlayerState));
 }
-const keysDown = {};
-export function initializePlayerControls() {
-    document.addEventListener('keydown', (event) => {
-        keysDown[event.key.toLowerCase()] = true;
-    });
-    document.addEventListener('keyup', (event) => {
-        keysDown[event.key.toLowerCase()] = false;
-        if (event.key === 'm') {
-            player.automation = !player.automation;
-        }
-    });
-}
 export function updatePlayerPosition(deltaTime) {
-    if (player.input) {
+    if (currentInputTarget === InputTarget.PlayerControl) {
         let moveX = 0;
         let moveY = 0;
-        const isKeyDown = keysDown['w'] || keysDown['s'] || keysDown['a'] || keysDown['d'];
-        if (keysDown['w']) {
+        const keysDown = ee.getKeysDown();
+        if (keysDown['w'] || keysDown['arrowup']) {
             moveY -= 1;
         }
-        if (keysDown['s']) {
+        if (keysDown['s'] || keysDown['arrowdown']) {
             moveY += 1;
         }
-        if (keysDown['a']) {
+        if (keysDown['a'] || keysDown['arrowleft']) {
             moveX -= 1;
         }
-        if (keysDown['d']) {
+        if (keysDown['d'] || keysDown['arrowright']) {
             moveX += 1;
+        }
+        if (keysDown['m']) {
+            setInputTarget(InputTarget.AutoControl);
         }
         if (moveX !== 0 || moveY !== 0) {
             const length = Math.hypot(moveX, moveY);
@@ -94,7 +85,7 @@ export function updatePlayerPosition(deltaTime) {
         }
         player.x += moveX * player.speed * deltaTime;
         player.y += moveY * player.speed * deltaTime;
-        if (player.gridSnap > 0 && !isKeyDown) {
+        if (player.gridSnap > 0 && !ee.anyKeyDown()) {
             let playerSnapx = Math.round(player.x / player.gridSnap) * player.gridSnap;
             let playerSnapy = Math.round(player.y / player.gridSnap) * player.gridSnap;
             const dx = playerSnapx - player.x;

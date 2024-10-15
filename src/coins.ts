@@ -29,3 +29,4 @@ export const resetCoins = () => {
 	localStorage.removeItem('coinCCoins')
 	coins = []
 }
+

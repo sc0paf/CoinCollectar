@@ -1,6 +1,7 @@
 import { RectObj, DraggableRect, coord } from './types/types'
 import { player } from './player.js'
 import { mtx, frameBounds } from './canv.js'
+import { EventEmitter, ee, setInputTarget, InputTarget, currentInputTarget } from './eventemitter.js' 
 
 
 class DragRect {
@@ -25,7 +26,11 @@ class DragRect {
 		canvas.strokeRect(this.x, this.y, this.width, this.height)
 		canvas.fillStyle = 'white'
 		canvas.font = '18px mono'
-		canvas.fillText(this.fillText, this.x + 15, this.y + 16)
+		canvas.fillText(this.fillText, this.x + 15, this.y + 20)
+	}
+
+	makeCopy() {
+		return new DragRect(this.x, this.y, this.width, this.height, this.fillText, true)
 	}
 
 	initMovement(mousePos: coord) {
@@ -48,13 +53,100 @@ class DragRect {
 		)
 	}
 
+	isThisIn(rect: RectObj) {
+		return (
+			this.x >= rect.x &&
+			this.x + this.width <= rect.x + rect.width &&
+			this.y >= rect.y &&
+			this.y + this.height <= rect.y + rect.height
+		)
+	}
+
 	drop() {
 		this.dragging = false
 	}
 }
 
+const dropArea: RectObj = {
+	x: 50,
+	y: 70,
+	width: 250,
+	height: 280
+}
 
+let tempDraggable: DragRect | null = null
+ 
+export const drawAutoMenu = () => {
+	mtx.fillStyle = 'rgba(0,0,0,0.7)'
+	mtx.fillRect(autoMenu.left, autoMenu.top, autoMenu.right, autoMenu.bottom)
+	mtx.strokeStyle = 'white'
+	mtx.strokeRect(autoMenu.left, autoMenu.top, autoMenu.right, autoMenu.bottom)
+	mtx.fillStyle = 'white'
+	mtx.font = '18px Arial'
+	mtx.fillText('Automation', frameBounds.leftBound + 40, frameBounds.topBound + 50)
+	mtx.strokeStyle = 'white'
+	mtx.strokeRect(dropArea.x, dropArea.y, dropArea.width, dropArea.height)
+
+	draggables.forEach(draggable => draggable.draw(mtx))
+
+}
+
+export const initAutomation = (ee: EventEmitter, canvas: HTMLCanvasElement):void => {
+	ee.on('keydown', handleKeyDown)
+	ee.on('mousedown', handleMouseDown)
+	ee.on('mousemove', handleMouseMove)
+	ee.on('mouseup', handleMouseUp)
+}
+
+function handleKeyDown(key:string) {
+	if (ee.isKeyDown('m') && currentInputTarget === InputTarget.AutoControl) {
+		setInputTarget(InputTarget.PlayerControl)
+	}
+}
+
+function handleMouseDown(mousePos: coord) {
+	if (currentInputTarget == InputTarget.AutoControl) {
+		draggables.forEach(draggable => {
+			if (draggable.isMouseIn(mousePos)) {
+				const copy = new DragRect(draggable.x, draggable.y, draggable.width, draggable.height, draggable.fillText, true)
+				draggables.push(copy)
+				copy.initMovement(mousePos)
+			}
+		})
+	}
+}
+
+function handleMouseMove(mousePos: coord) {
+	draggables.forEach(draggable => {
+		if (draggable.dragging) {
+			draggable.move(mousePos)
+		}
+	})
+}
+
+function handleMouseUp(mousePos: coord) {
+	draggables.forEach(draggable => {
+		if (draggable.dragging && !draggable.isThisIn(dropArea)) {
+			draggables.pop()
+		} else {
+			draggable.drop()
+		}
+	})
+}
+
+
+const DragData = [
+	{ x: 410, y: 90, width: 180, height: 30, fillText: '\u2190 Go Left' },
+	{ x: 410, y: 130, width: 180, height: 30, fillText: '\u2192 Go Right' },
+	{ x: 410, y: 170, width: 180, height: 30, fillText: '\u2191 Go Up' },
+	{ x: 410, y: 210, width: 180, height: 30, fillText: '\u2193 Go Down' }
+]
 export const draggables: DragRect[] = []
+
+DragData.forEach(data => {
+	draggables.push(new DragRect(data.x, data.y, data.width, data.height, data.fillText, false))
+})
+
 
 
 const draggableData =  [
@@ -63,6 +155,8 @@ const draggableData =  [
 	{ fillText: '\u2191 Go Up', dragging: false },
 	{ fillText: '\u2193 Go Down', dragging: false }
 ]
+
+
 const draggablesConfig = {
 	x: 400,
 	y: 60,
@@ -72,12 +166,8 @@ const draggablesConfig = {
 }
 
 
-// const DragPullData: DragPullArea[] = [
-// 	{ x: 410, y: 90, width: 180, height: 30, fillText: '\u2190 Go Left' },
-// 	{ x: 410, y: 130, width: 180, height: 30, fillText: '\u2192 Go Right' },
-// 	{ x: 410, y: 170, width: 180, height: 30, fillText: '\u2191 Go Up' },
-// 	{ x: 410, y: 210, width: 180, height: 30, fillText: '\u2193 Go Down' }
-// ]
+
+
 
 
 
@@ -122,17 +212,4 @@ export const autoMenu = {
 
 
 
-export const drawAutoMenu = () => {
-	mtx.fillStyle = 'rgba(0,0,0,0.7)'
-	mtx.fillRect(autoMenu.left, autoMenu.top, autoMenu.right, autoMenu.bottom)
-	mtx.strokeStyle = 'white'
-	mtx.strokeRect(autoMenu.left, autoMenu.top, autoMenu.right, autoMenu.bottom)
-	mtx.fillStyle = 'white'
-	mtx.font = '18px Arial'
-	mtx.fillText('Automation', frameBounds.leftBound + 40, frameBounds.topBound + 55)
 
-
-	mtx.strokeStyle = 'white'
-	mtx.strokeRect(50, 80, 250, 200)
-
-}

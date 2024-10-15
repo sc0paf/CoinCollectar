@@ -87,8 +87,6 @@ export interface Player extends sqe {
 	playTime: number;
 	/** The amount of coins the player has */
 	coins: number;
-	/** Can player move */
-	input: boolean;
 	/** is automation available */
 	automation: boolean;
 	/** is PC speaking */
